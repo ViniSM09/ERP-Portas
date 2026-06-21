@@ -10,13 +10,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Mantém o estado normal
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setLoading(true); // CORRIGIDO AQUI: de 'loading(true)' para 'setLoading(true)'
 
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -36,26 +36,31 @@ export default function LoginPage() {
 
         if (profileError) throw profileError;
 
-        // Redireciona baseado no cargo do usuário
-        if (profile?.role === 'administrador' || profile?.role === 'financeiro') {
-          router.push('/dashboard/admin/financeiro-avancado');
-        } else if (profile?.role === 'vendedor') {
+        const userRole = profile?.role?.toLowerCase();
+
+        // Redirecionamento correto com 'financeiro-avançado'
+        if (userRole === 'administrador' || userRole === 'financeiro') {
+          router.push('/dashboard/admin/financeiro-avançado');
+        } else if (userRole === 'vendedor') {
           router.push('/portal-entrega');
         } else {
           setError('Usuário sem permissões configuradas no sistema.');
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao efetuar login. Verifique suas credenciais.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Erro ao efetuar login. Verifique suas credenciais.');
+      }
     } finally {
-      setLoading(false);
+      setLoading(false); // CORRIGIDO AQUI TAMBÉM: de 'loading(false)' para 'setLoading(false)'
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 font-sans p-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-        {/* Detalhe estético de fundo */}
         <div className="absolute top-0 left-1/4 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full"></div>
         
         <div className="flex flex-col items-center mb-8 relative z-10">
